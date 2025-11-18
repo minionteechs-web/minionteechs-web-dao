@@ -31,6 +31,7 @@ logs/
 npm-debug.log*
 
 # Dependencies
+lib/
 .yarn/
 yarn.lock
 package-lock.json

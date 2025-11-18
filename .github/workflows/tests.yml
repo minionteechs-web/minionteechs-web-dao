@@ -14,13 +14,18 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Setup Git
+        run: |
+          git config --global user.email "ci@example.com"
+          git config --global user.name "CI"
+
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
         with:
           version: nightly
 
       - name: Install Dependencies
-        run: forge install
+        run: forge install --no-commit
 
       - name: Build
         run: forge build
