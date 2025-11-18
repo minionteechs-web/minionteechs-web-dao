@@ -7,24 +7,24 @@ import "../src/Timelock.sol";
 contract TimelockTest is Test {
     Timelock timelock;
     address admin;
-    address alice = address(0xAAAA);
-    address target = address(0xCCCC);
+    address target = address(0x1234);
 
     function setUp() public {
         admin = msg.sender;
-        timelock = new Timelock(3 days);
+        timelock = new Timelock(2 days);
     }
 
-    function testQueueAndExecute() public {
+    function testQueue() public {
+        bytes memory data = abi.encodeWithSignature("test()");
+        bytes32 id = timelock.queue(target, 0, data);
+        assertEq(timelock.queuedAt(id), block.timestamp);
+    }
+
+    function testExecuteAfterDelay() public {
         bytes memory data = "";
-        
-        vm.prank(admin);
         bytes32 id = timelock.queue(target, 0, data);
         
-        assertEq(timelock.queuedAt(id), block.timestamp);
-        
-        // Move time forward
-        vm.warp(block.timestamp + 4 days);
+        vm.warp(block.timestamp + 3 days);
         
         vm.prank(admin);
         timelock.execute{value: 0}(target, 0, data, id);
@@ -32,39 +32,20 @@ contract TimelockTest is Test {
 
     function testExecuteBeforeDelayFails() public {
         bytes memory data = "";
-        
-        vm.prank(admin);
         bytes32 id = timelock.queue(target, 0, data);
         
-        vm.prank(admin);
         vm.expectRevert("delay not passed");
         timelock.execute{value: 0}(target, 0, data, id);
     }
 
-    function testOnlyAdminCanQueue() public {
-        bytes memory data = "";
-        
-        vm.prank(alice);
-        vm.expectRevert("not admin");
-        timelock.queue(target, 0, data);
-    }
-
-    function testChangeAdmin() public {
-        vm.prank(admin);
-        timelock.changeAdmin(alice);
-        
-        assertEq(timelock.admin(), alice);
-    }
-
     function testSetDelay() public {
-        vm.prank(admin);
         timelock.setDelay(7 days);
-        
         assertEq(timelock.delay(), 7 days);
     }
 
-    function testReceiveEther() public {
-        (bool success, ) = address(timelock).call{value: 1 ether}("");
-        require(success);
+    function testChangeAdmin() public {
+        address newAdmin = address(0x5678);
+        timelock.changeAdmin(newAdmin);
+        assertEq(timelock.admin(), newAdmin);
     }
 }

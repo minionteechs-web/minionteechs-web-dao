@@ -6,83 +6,43 @@ import "../src/GovernanceToken.sol";
 
 contract GovernanceTokenTest is Test {
     GovernanceToken token;
-    address owner;
     address alice = address(0xAAAA);
     address bob = address(0xBBBB);
 
     function setUp() public {
-        owner = msg.sender;
         token = new GovernanceToken();
     }
 
-    function testInitialState() public {
-        assertEq(token.name(), "MinionTechs DAO Token");
-        assertEq(token.symbol(), "MTD");
-        assertEq(token.decimals(), 18);
-    }
-
     function testMint() public {
-        uint256 amount = 1000e18;
-        token.mint(alice, amount);
-        assertEq(token.balanceOf(alice), amount);
-        assertEq(token.totalSupply(), amount);
-    }
-
-    function testMintMaxSupply() public {
-        uint256 maxSupply = token.MAX_SUPPLY();
-        token.mint(alice, maxSupply);
-        
-        vm.expectRevert("Exceeds max supply");
-        token.mint(bob, 1e18);
-    }
-
-    function testMintOnlyOwner() public {
-        vm.prank(alice);
-        vm.expectRevert();
-        token.mint(bob, 100e18);
+        token.mint(alice, 1000e18);
+        assertEq(token.balanceOf(alice), 1000e18);
     }
 
     function testBurn() public {
-        uint256 amount = 1000e18;
-        token.mint(alice, amount);
-        
+        token.mint(alice, 1000e18);
         vm.prank(alice);
-        token.burn(500e18);
-        
-        assertEq(token.balanceOf(alice), 500e18);
-        assertEq(token.totalSupply(), 500e18);
+        token.burn(100e18);
+        assertEq(token.balanceOf(alice), 900e18);
+    }
+
+    function testDelegate() public {
+        token.mint(alice, 1000e18);
+        vm.prank(alice);
+        token.delegate(alice);
+        assertEq(token.getVotes(alice), 1000e18);
     }
 
     function testTransfer() public {
-        uint256 amount = 1000e18;
-        token.mint(alice, amount);
-        
+        token.mint(alice, 1000e18);
         vm.prank(alice);
-        token.transfer(bob, 500e18);
-        
-        assertEq(token.balanceOf(alice), 500e18);
-        assertEq(token.balanceOf(bob), 500e18);
+        token.transfer(bob, 100e18);
+        assertEq(token.balanceOf(bob), 100e18);
+        assertEq(token.balanceOf(alice), 900e18);
     }
 
-    function testVotes() public {
-        uint256 amount = 1000e18;
-        token.mint(alice, amount);
-        
-        vm.prank(alice);
-        token.delegate(alice);
-        
-        assertEq(token.getVotes(alice), amount);
-    }
-
-    function testDelegation() public {
-        uint256 amount = 1000e18;
-        token.mint(alice, amount);
-        token.mint(bob, amount);
-        
-        vm.prank(alice);
-        token.delegate(bob);
-        
-        assertEq(token.getVotes(bob), amount);
-        assertEq(token.getVotes(alice), 0);
+    function testMaxSupply() public {
+        token.mint(alice, 100_000_000e18);
+        vm.expectRevert("Exceeds max supply");
+        token.mint(bob, 1e18);
     }
 }

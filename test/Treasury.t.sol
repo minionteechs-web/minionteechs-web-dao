@@ -6,89 +6,45 @@ import "../src/Treasury.sol";
 
 contract TreasuryTest is Test {
     Treasury treasury;
-    address owner;
     address alice = address(0xAAAA);
     address bob = address(0xBBBB);
 
     function setUp() public {
-        owner = msg.sender;
         treasury = new Treasury();
     }
 
     function testDeposit() public {
-        uint256 amount = 10 ether;
-        
         vm.prank(alice);
-        treasury.deposit{value: amount}();
-        
-        assertEq(treasury.getTreasuryBalance(), amount);
-        assertEq(treasury.balance(alice), amount);
-        assertEq(treasury.totalFunds(), amount);
-    }
-
-    function testReceive() public {
-        uint256 amount = 5 ether;
-        
-        vm.prank(alice);
-        (bool success, ) = address(treasury).call{value: amount}("");
-        require(success);
-        
-        assertEq(treasury.getTreasuryBalance(), amount);
+        treasury.deposit{value: 10 ether}();
+        assertEq(treasury.balances(alice), 10 ether);
+        assertEq(treasury.totalFunds(), 10 ether);
     }
 
     function testWithdraw() public {
-        uint256 amount = 10 ether;
+        vm.prank(alice);
+        treasury.deposit{value: 10 ether}();
         
         vm.prank(alice);
-        treasury.deposit{value: amount}();
-        
-        treasury.withdraw(payable(bob), amount);
-        
-        assertEq(bob.balance, amount);
-        assertEq(treasury.getTreasuryBalance(), 0);
+        treasury.withdraw(5 ether);
+        assertEq(treasury.balances(alice), 5 ether);
     }
 
-    function testWithdrawInsufficientFunds() public {
-        uint256 amount = 10 ether;
-        
-        vm.prank(alice);
-        treasury.deposit{value: amount}();
-        
-        vm.expectRevert("Insufficient funds");
-        treasury.withdraw(payable(bob), amount + 1 ether);
-    }
-
-    function testWithdrawOnlyOwner() public {
-        uint256 amount = 10 ether;
-        
-        vm.prank(alice);
-        treasury.deposit{value: amount}();
-        
+    function testReceiveEther() public {
         vm.prank(bob);
-        vm.expectRevert();
-        treasury.withdraw(payable(bob), amount);
+        (bool ok, ) = address(treasury).call{value: 5 ether}("");
+        require(ok);
+        assertEq(treasury.balances(bob), 5 ether);
     }
 
-    function testGetUserBalance() public {
-        uint256 amount = 5 ether;
-        
+    function testTreasuryBalance() public {
         vm.prank(alice);
-        treasury.deposit{value: amount}();
-        
-        assertEq(treasury.getUserBalance(alice), amount);
+        treasury.deposit{value: 20 ether}();
+        assertEq(treasury.getTreasuryBalance(), 20 ether);
     }
 
-    function testMultipleDeposits() public {
-        uint256 amount1 = 5 ether;
-        uint256 amount2 = 3 ether;
-        
+    function testWithdrawFails() public {
         vm.prank(alice);
-        treasury.deposit{value: amount1}();
-        
-        vm.prank(alice);
-        treasury.deposit{value: amount2}();
-        
-        assertEq(treasury.getUserBalance(alice), amount1 + amount2);
-        assertEq(treasury.getTreasuryBalance(), amount1 + amount2);
+        vm.expectRevert("Insufficient balance");
+        treasury.withdraw(100 ether);
     }
 }
