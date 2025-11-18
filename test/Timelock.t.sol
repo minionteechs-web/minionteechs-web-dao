@@ -12,93 +12,59 @@ contract TimelockTest is Test {
 
     function setUp() public {
         admin = msg.sender;
-        address[] memory admins = new address[](1);
-        admins[0] = admin;
-        timelock = new Timelock(admins);
+        timelock = new Timelock(3 days);
     }
 
-    function testScheduleOperation() public {
-        bytes32 salt = keccak256("test");
-        uint256 delay = 3 days;
+    function testQueueAndExecute() public {
         bytes memory data = "";
-
-        timelock.schedule(target, 0, data, bytes32(0), salt, delay);
         
-        bytes32 id = timelock.hashOperation(target, 0, data, bytes32(0), salt);
-        assertEq(timelock.timestamps(id), block.timestamp + delay);
+        vm.prank(admin);
+        bytes32 id = timelock.queue(target, 0, data);
+        
+        assertEq(timelock.queuedAt(id), block.timestamp);
+        
+        // Move time forward
+        vm.warp(block.timestamp + 4 days);
+        
+        vm.prank(admin);
+        timelock.execute{value: 0}(target, 0, data, id);
     }
 
-    function testScheduleInvalidDelay() public {
-        bytes32 salt = keccak256("test");
+    function testExecuteBeforeDelayFails() public {
         bytes memory data = "";
-
-        vm.expectRevert("Invalid delay");
-        timelock.schedule(target, 0, data, bytes32(0), salt, 1 days);
-
-        vm.expectRevert("Invalid delay");
-        timelock.schedule(target, 0, data, bytes32(0), salt, 31 days);
+        
+        vm.prank(admin);
+        bytes32 id = timelock.queue(target, 0, data);
+        
+        vm.prank(admin);
+        vm.expectRevert("delay not passed");
+        timelock.execute{value: 0}(target, 0, data, id);
     }
 
-    function testExecuteBeforeDelay() public {
-        bytes32 salt = keccak256("test");
-        uint256 delay = 3 days;
+    function testOnlyAdminCanQueue() public {
         bytes memory data = "";
-
-        timelock.schedule(target, 0, data, bytes32(0), salt, delay);
         
-        vm.expectRevert("Operation not ready");
-        timelock.execute(target, 0, data, bytes32(0), salt);
-    }
-
-    function testExecuteAfterDelay() public {
-        bytes32 salt = keccak256("test");
-        uint256 delay = 3 days;
-        bytes memory data = "";
-
-        timelock.schedule(target, 0, data, bytes32(0), salt, delay);
-        
-        vm.warp(block.timestamp + delay);
-        timelock.execute(target, 0, data, bytes32(0), salt);
-        
-        bytes32 id = timelock.hashOperation(target, 0, data, bytes32(0), salt);
-        assertEq(timelock.timestamps(id), 0);
-    }
-
-    function testCancelOperation() public {
-        bytes32 salt = keccak256("test");
-        uint256 delay = 3 days;
-        bytes memory data = "";
-
-        timelock.schedule(target, 0, data, bytes32(0), salt, delay);
-        timelock.cancel(target, 0, data, bytes32(0), salt);
-        
-        bytes32 id = timelock.hashOperation(target, 0, data, bytes32(0), salt);
-        assertEq(timelock.timestamps(id), 0);
-    }
-
-    function testIsOperationReady() public {
-        bytes32 salt = keccak256("test");
-        uint256 delay = 3 days;
-        bytes memory data = "";
-
-        bytes32 id = timelock.hashOperation(target, 0, data, bytes32(0), salt);
-        
-        assertFalse(timelock.isOperationReady(id));
-        
-        timelock.schedule(target, 0, data, bytes32(0), salt, delay);
-        assertFalse(timelock.isOperationReady(id));
-        
-        vm.warp(block.timestamp + delay);
-        assertTrue(timelock.isOperationReady(id));
-    }
-
-    function testOnlyAdminCanSchedule() public {
-        bytes32 salt = keccak256("test");
-        uint256 delay = 3 days;
-        bytes memory data = "";
-
         vm.prank(alice);
-        vm.expectRevert("Not admin");
-        timelock.schedule(target, 0, data, bytes32(0), salt, delay);
+        vm.expectRevert("not admin");
+        timelock.queue(target, 0, data);
+    }
+
+    function testChangeAdmin() public {
+        vm.prank(admin);
+        timelock.changeAdmin(alice);
+        
+        assertEq(timelock.admin(), alice);
+    }
+
+    function testSetDelay() public {
+        vm.prank(admin);
+        timelock.setDelay(7 days);
+        
+        assertEq(timelock.delay(), 7 days);
+    }
+
+    function testReceiveEther() public {
+        (bool success, ) = address(timelock).call{value: 1 ether}("");
+        require(success);
     }
 }

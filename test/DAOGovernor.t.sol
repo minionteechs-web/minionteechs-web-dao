@@ -19,10 +19,8 @@ contract DAOGovernorTest is Test {
         // Deploy token
         token = new GovernanceToken();
         
-        // Deploy timelock
-        address[] memory admins = new address[](1);
-        admins[0] = msg.sender;
-        timelock = new Timelock(admins);
+        // Deploy timelock with 2 day delay
+        timelock = new Timelock(2 days);
         
         // Deploy governor
         governor = new DAOGovernor(token, timelock);

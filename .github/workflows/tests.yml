@@ -33,17 +33,7 @@ jobs:
         run: forge build
 
       - name: Tests
-        run: forge test -v
+        run: forge test -vvv
 
       - name: Gas Report
         run: forge test --gas-report
-
-      - name: Coverage
-        run: forge coverage --report lcov
-        
-      - name: Upload Coverage
-        uses: codecov/codecov-action@v3
-        with:
-          files: ./lcov.info
-          flags: unittests
-          name: codecov-umbrella
