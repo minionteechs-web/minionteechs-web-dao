@@ -21,6 +21,9 @@ jobs:
         with:
           version: nightly
 
+      - name: Install Dependencies
+        run: forge install
+
       - name: Build
         run: forge build
 
