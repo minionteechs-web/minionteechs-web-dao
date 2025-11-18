@@ -30,7 +30,7 @@ jobs:
           forge install foundry-rs/forge-std --no-commit
 
       - name: Build
-        run: forge build -vvv
+        run: forge build
 
       - name: Tests
         run: forge test -v
