@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "forge-std/Test.sol";
 import "../src/SimpleTimelock.sol";
 
-contract SimpleTimelockTest is Test {
+contract SimpleTimelockTest {
     SimpleTimelock timelock;
     address admin;
     address target = address(0x1234);
@@ -17,7 +16,7 @@ contract SimpleTimelockTest is Test {
     function testQueue() public {
         bytes memory data = "";
         bytes32 id = timelock.queue(target, 0, data);
-        assertEq(timelock.queuedAt(id), block.timestamp);
+        require(timelock.queuedAt(id) == block.timestamp, "Queue failed");
     }
 
     function testExecuteAfterDelay() public {
@@ -33,18 +32,21 @@ contract SimpleTimelockTest is Test {
         bytes memory data = "";
         bytes32 id = timelock.queue(target, 0, data);
         
-        vm.expectRevert("delay not passed");
-        timelock.execute{value: 0}(target, 0, data, id);
+        try timelock.execute{value: 0}(target, 0, data, id) {
+            require(false, "Should have reverted");
+        } catch (bytes memory reason) {
+            require(keccak256(reason) == keccak256(abi.encodeWithSignature("Error(string)", "delay not passed")), "Wrong error");
+        }
     }
 
     function testSetDelay() public {
         timelock.setDelay(7 days);
-        assertEq(timelock.delay(), 7 days);
+        require(timelock.delay() == 7 days, "Set delay failed");
     }
 
     function testChangeAdmin() public {
         address newAdmin = address(0x5678);
         timelock.changeAdmin(newAdmin);
-        assertEq(timelock.admin(), newAdmin);
+        require(timelock.admin() == newAdmin, "Change admin failed");
     }
 }
