@@ -2,8 +2,8 @@
 pragma solidity ^0.8.20;
 
 import "forge-std/Script.sol";
-import "../src/GovernanceToken.sol";
-import "../src/DAOStorage.sol";
+import "../src/SimpleToken.sol";
+import "../src/SimpleStorage.sol";
 
 /**
  * @dev Script to initialize DAO with members and tokens
@@ -17,8 +17,8 @@ contract InitializeDAO is Script {
 
         vm.startBroadcast(deployerPrivateKey);
 
-        GovernanceToken token = GovernanceToken(tokenAddress);
-        DAOStorage daoStorage = DAOStorage(storageAddress);
+        SimpleToken token = SimpleToken(tokenAddress);
+        SimpleStorage daoStorage = SimpleStorage(storageAddress);
 
         // Add members
         address member1 = 0x1234567890123456789012345678901234567890;

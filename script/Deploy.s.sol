@@ -2,11 +2,10 @@
 pragma solidity ^0.8.20;
 
 import "forge-std/Script.sol";
-import "../src/GovernanceToken.sol";
-import "../src/Timelock.sol";
-import "../src/DAOGovernor.sol";
-import "../src/Treasury.sol";
-import "../src/DAOStorage.sol";
+import "../src/SimpleToken.sol";
+import "../src/SimpleTimelock.sol";
+import "../src/SimpleTreasury.sol";
+import "../src/SimpleStorage.sol";
 
 contract DeployDAO is Script {
     function run() public {
@@ -14,34 +13,24 @@ contract DeployDAO is Script {
         vm.startBroadcast(deployerPrivateKey);
 
         // Deploy Governance Token
-        GovernanceToken token = new GovernanceToken();
-        console.log("GovernanceToken deployed at:", address(token));
+        SimpleToken token = new SimpleToken();
+        console.log("SimpleToken deployed at:", address(token));
 
         // Deploy Timelock
-        address[] memory admins = new address[](1);
-        admins[0] = msg.sender;
-        Timelock timelock = new Timelock(admins);
-        console.log("Timelock deployed at:", address(timelock));
-
-        // Deploy Governor
-        DAOGovernor governor = new DAOGovernor(token, timelock);
-        console.log("DAOGovernor deployed at:", address(governor));
+        SimpleTimelock timelock = new SimpleTimelock(1 days);
+        console.log("SimpleTimelock deployed at:", address(timelock));
 
         // Deploy Treasury
-        Treasury treasury = new Treasury();
-        console.log("Treasury deployed at:", address(treasury));
+        SimpleTreasury treasury = new SimpleTreasury();
+        console.log("SimpleTreasury deployed at:", address(treasury));
 
         // Deploy DAO Storage
-        DAOStorage daoStorage = new DAOStorage();
-        console.log("DAOStorage deployed at:", address(daoStorage));
+        SimpleStorage daoStorage = new SimpleStorage();
+        console.log("SimpleStorage deployed at:", address(daoStorage));
 
         // Mint initial tokens to deployer
         token.mint(msg.sender, 1000000e18);
         console.log("Minted 1M tokens to deployer");
-
-        // Delegate votes to self
-        token.delegate(msg.sender);
-        console.log("Delegated votes to deployer");
 
         vm.stopBroadcast();
 
