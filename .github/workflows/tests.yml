@@ -25,10 +25,12 @@ jobs:
           version: nightly
 
       - name: Install Dependencies
-        run: forge install --no-commit
+        run: |
+          forge install OpenZeppelin/openzeppelin-contracts --no-commit
+          forge install foundry-rs/forge-std --no-commit
 
       - name: Build
-        run: forge build
+        run: forge build -vvv
 
       - name: Tests
         run: forge test -v
