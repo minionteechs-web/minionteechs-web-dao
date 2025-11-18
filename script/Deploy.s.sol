@@ -37,7 +37,6 @@ contract DeployDAO is Script {
         console.log("\n=== DAO Deployment Complete ===");
         console.log("Token:", address(token));
         console.log("Timelock:", address(timelock));
-        console.log("Governor:", address(governor));
         console.log("Treasury:", address(treasury));
         console.log("Storage:", address(daoStorage));
     }
