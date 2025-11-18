@@ -24,6 +24,13 @@ jobs:
         with:
           version: nightly
 
+      - name: Install forge-std
+        run: |
+          mkdir -p lib
+          cd lib
+          [ ! -d "forge-std" ] && git clone https://github.com/foundry-rs/forge-std.git || true
+          cd ..
+
       - name: Build
         run: forge build
 
