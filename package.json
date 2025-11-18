@@ -1,0 +1,30 @@
+{
+  "name": "minionteechs-web-dao",
+  "version": "1.0.0",
+  "description": "A professional DAO framework with governance, tokenomics, and treasury management",
+  "main": "index.js",
+  "scripts": {
+    "test": "forge test",
+    "test:gas": "forge test --gas-report",
+    "test:coverage": "forge coverage",
+    "build": "forge build",
+    "clean": "forge clean",
+    "deploy": "forge script script/Deploy.s.sol --rpc-url $MAINNET_RPC_URL --broadcast --verify",
+    "deploy:sepolia": "forge script script/Deploy.s.sol --rpc-url $SEPOLIA_RPC_URL --broadcast --verify",
+    "format": "forge fmt",
+    "lint": "solhint 'src/**/*.sol'",
+    "docs": "forge doc --out docs"
+  },
+  "keywords": [
+    "dao",
+    "governance",
+    "ethereum",
+    "solidity",
+    "foundry"
+  ],
+  "author": "MinionTechs",
+  "license": "MIT",
+  "devDependencies": {
+    "forge-std": "^1.7.0"
+  }
+}

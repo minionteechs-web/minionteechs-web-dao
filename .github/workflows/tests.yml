@@ -1,0 +1,41 @@
+# GitHub Actions CI Configuration
+
+name: Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
+
+      - name: Build
+        run: forge build
+
+      - name: Tests
+        run: forge test -v
+
+      - name: Gas Report
+        run: forge test --gas-report
+
+      - name: Coverage
+        run: forge coverage --report lcov
+        
+      - name: Upload Coverage
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./lcov.info
+          flags: unittests
+          name: codecov-umbrella
