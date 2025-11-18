@@ -2,15 +2,15 @@
 pragma solidity ^0.8.20;
 
 import "forge-std/Test.sol";
-import "../src/Treasury.sol";
+import "../src/SimpleTreasury.sol";
 
-contract TreasuryTest is Test {
-    Treasury treasury;
+contract SimpleTreasuryTest is Test {
+    SimpleTreasury treasury;
     address alice = address(0xAAAA);
     address bob = address(0xBBBB);
 
     function setUp() public {
-        treasury = new Treasury();
+        treasury = new SimpleTreasury();
     }
 
     function testDeposit() public {

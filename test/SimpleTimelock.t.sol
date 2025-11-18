@@ -2,20 +2,20 @@
 pragma solidity ^0.8.20;
 
 import "forge-std/Test.sol";
-import "../src/Timelock.sol";
+import "../src/SimpleTimelock.sol";
 
-contract TimelockTest is Test {
-    Timelock timelock;
+contract SimpleTimelockTest is Test {
+    SimpleTimelock timelock;
     address admin;
     address target = address(0x1234);
 
     function setUp() public {
         admin = msg.sender;
-        timelock = new Timelock(2 days);
+        timelock = new SimpleTimelock(2 days);
     }
 
     function testQueue() public {
-        bytes memory data = abi.encodeWithSignature("test()");
+        bytes memory data = "";
         bytes32 id = timelock.queue(target, 0, data);
         assertEq(timelock.queuedAt(id), block.timestamp);
     }
@@ -26,7 +26,6 @@ contract TimelockTest is Test {
         
         vm.warp(block.timestamp + 3 days);
         
-        vm.prank(admin);
         timelock.execute{value: 0}(target, 0, data, id);
     }
 

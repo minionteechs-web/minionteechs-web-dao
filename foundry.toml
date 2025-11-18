@@ -4,7 +4,7 @@ out = "out"
 libs = ["lib"]
 test = "test"
 cache_path = "cache"
-remappings = ["@openzeppelin=lib/openzeppelin-contracts/", "forge-std/=lib/forge-std/src/"]
+remappings = ["forge-std/=lib/forge-std/src/"]
 
 # Compiler settings
 solc_version = "0.8.20"

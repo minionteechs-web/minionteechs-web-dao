@@ -2,13 +2,12 @@
 pragma solidity ^0.8.20;
 
 /**
- * @title Timelock
- * @dev Simple timelock for delayed execution
+ * @title SimpleTimelock
+ * @dev Time-delayed execution mechanism
  */
-contract Timelock {
+contract SimpleTimelock {
     address public admin;
     uint256 public delay;
-
     mapping(bytes32 => uint256) public queuedAt;
 
     event Queued(bytes32 indexed id);
@@ -24,8 +23,8 @@ contract Timelock {
         _;
     }
 
-    function queue(address target, uint256 value, bytes calldata data) 
-        external onlyAdmin returns (bytes32) 
+    function queue(address target, uint256 value, bytes calldata data)
+        external onlyAdmin returns (bytes32)
     {
         bytes32 id = keccak256(abi.encode(target, value, data, block.timestamp));
         queuedAt[id] = block.timestamp;
@@ -33,8 +32,8 @@ contract Timelock {
         return id;
     }
 
-    function execute(address target, uint256 value, bytes calldata data, bytes32 id) 
-        external onlyAdmin payable returns (bytes memory) 
+    function execute(address target, uint256 value, bytes calldata data, bytes32 id)
+        external onlyAdmin payable returns (bytes memory)
     {
         require(queuedAt[id] != 0, "not queued");
         require(block.timestamp >= queuedAt[id] + delay, "delay not passed");

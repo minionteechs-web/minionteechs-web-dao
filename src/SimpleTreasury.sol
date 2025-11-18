@@ -2,10 +2,10 @@
 pragma solidity ^0.8.20;
 
 /**
- * @title Treasury
- * @dev Simple treasury for DAO funds
+ * @title SimpleTreasury
+ * @dev ETH fund management
  */
-contract Treasury {
+contract SimpleTreasury {
     mapping(address => uint256) public balances;
     uint256 public totalFunds;
 
@@ -30,10 +30,6 @@ contract Treasury {
 
     function getTreasuryBalance() public view returns (uint256) {
         return address(this).balance;
-    }
-
-    function balance(address account) public view returns (uint256) {
-        return balances[account];
     }
 
     receive() external payable {

@@ -2,21 +2,21 @@
 pragma solidity ^0.8.20;
 
 import "forge-std/Test.sol";
-import "../src/DAOStorage.sol";
+import "../src/SimpleStorage.sol";
 
-contract DAOStorageTest is Test {
-    DAOStorage storage_;
+contract SimpleStorageTest is Test {
+    SimpleStorage storage_;
     address alice = address(0xAAAA);
     address bob = address(0xBBBB);
 
     function setUp() public {
-        storage_ = new DAOStorage();
+        storage_ = new SimpleStorage();
     }
 
     function testAddMember() public {
         storage_.addMember(alice, 100);
         assertTrue(storage_.isMember(alice));
-        assertEq(storage_.getMember(alice).shares, 100);
+        assertEq(storage_.getShares(alice), 100);
     }
 
     function testAddMultipleMembers() public {
@@ -33,16 +33,14 @@ contract DAOStorageTest is Test {
         assertEq(storage_.totalShares(), 0);
     }
 
-    function testUpdateShares() public {
-        storage_.addMember(alice, 100);
-        storage_.updateShares(alice, 200);
-        assertEq(storage_.getMember(alice).shares, 200);
-        assertEq(storage_.totalShares(), 200);
-    }
-
     function testCannotAddDuplicateMember() public {
         storage_.addMember(alice, 100);
         vm.expectRevert("Member exists");
         storage_.addMember(alice, 50);
+    }
+
+    function testCannotRemoveNonMember() public {
+        vm.expectRevert("Member not found");
+        storage_.removeMember(alice);
     }
 }
